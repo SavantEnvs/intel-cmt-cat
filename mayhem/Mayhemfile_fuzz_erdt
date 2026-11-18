@@ -1,0 +1,9 @@
+project: savantenvs/intel-cmt-cat
+target: fuzz_erdt
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/fuzz_erdt/testsuite
+cmds:
+  - cmd: /mayhem/fuzz_erdt
+    libfuzzer: true
+    timeout: 5

@@ -1,0 +1,11 @@
+# Build-context filter for mayhem/Dockerfile (BuildKit reads it in place of the root .dockerignore, whose
+# unit-test/, tests/ and .git entries would strip the oracle's sources and the history the grader uses).
+mayhem/build/
+*.o
+*.a
+*.so
+*.so.*
+**/__pycache__/
+.DS_Store
+*.swp
+*~
