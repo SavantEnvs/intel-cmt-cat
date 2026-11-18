@@ -1,0 +1,24 @@
+name: diag
+on:
+  push:
+    branches: [diag-ci]
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: build and annotate
+        run: |
+          set +e
+          { uname -r; nproc; cat /sys/devices/system/cpu/possible; grep -c resctrl /proc/filesystems; ls /sys/fs/resctrl 2>&1 | head -3; id; } > host.txt 2>&1
+          docker build --progress=plain -f mayhem/Dockerfile --build-arg COMMIT=x --build-arg REPO_URL=x -t diag:t . > build.log 2>&1
+          echo "rc=$?" >> host.txt
+          { cat host.txt; echo ----; grep -nE "FAILED|missing test|only [0-9]+|not found|exited|expected|ERROR" build.log | head -40; echo ----; tail -c 6000 build.log; } > ann.txt
+          python3 - <<'PY'
+          s=open('ann.txt',errors='replace').read()
+          for i in range(0,len(s),3500):
+              c=s[i:i+3500].replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print('::warning title=diag%d::%s'%(i//3500,c))
+          PY
