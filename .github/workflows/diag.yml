@@ -12,10 +12,11 @@ jobs:
       - name: build and annotate
         run: |
           set +e
-          { uname -r; nproc; cat /sys/devices/system/cpu/possible; grep -c resctrl /proc/filesystems; ls /sys/fs/resctrl 2>&1 | head -3; id; } > host.txt 2>&1
-          docker build --progress=plain -f mayhem/Dockerfile --build-arg COMMIT=x --build-arg REPO_URL=x -t diag:t . > build.log 2>&1
-          echo "rc=$?" >> host.txt
-          { cat host.txt; echo ----; grep -nE "FAILED|missing test|only [0-9]+|not found|exited|expected|ERROR" build.log | head -40; echo ----; tail -c 6000 build.log; } > ann.txt
+          docker build -q -f mayhem/Dockerfile --build-arg COMMIT=x --build-arg REPO_URL=x -t diag:t . > /dev/null 2>&1
+          printf 'FROM diag:t\nRUN for i in $(seq 1 40); do bash mayhem/test.sh > /tmp/o.$i 2>&1 && echo ok $i || { echo FAIL $i; tail -60 /tmp/o.$i; }; done; true\n' > Dockerfile.diag
+          docker build --no-cache --progress=plain -f Dockerfile.diag . > loop.log 2>&1
+          docker run --rm diag:t bash -c 'for i in $(seq 1 40); do bash mayhem/test.sh > /tmp/o.$i 2>&1 && echo ok $i || { echo FAIL $i; tail -60 /tmp/o.$i; }; done' > run.log 2>&1
+          { echo BUILDLOOP; grep -c " ok " loop.log; grep -A60 FAIL loop.log | head -150; echo RUNLOOP; grep -c "^ok" run.log; grep -A60 FAIL run.log | head -150; } > ann.txt
           python3 - <<'PY'
           s=open('ann.txt',errors='replace').read()
           for i in range(0,len(s),3500):
