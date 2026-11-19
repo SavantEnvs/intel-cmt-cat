@@ -1,0 +1,9 @@
+project: savantenvs/intel-cmt-cat
+target: fuzz_mem_regions
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/fuzz_mem_regions/testsuite
+cmds:
+  - cmd: /mayhem/fuzz_mem_regions
+    libfuzzer: true
+    timeout: 5

@@ -1,0 +1,9 @@
+project: savantenvs/intel-cmt-cat
+target: pqos_config
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/pqos_config/testsuite
+cmds:
+  - cmd: /mayhem/pqos_config -f @@
+    afl: true
+    timeout: 10
